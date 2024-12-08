@@ -1,6 +1,7 @@
 // Grid version 2
 import Grid from '@mui/material/Grid2' 
 import './App.css'
+
 import IndicatorWeather from './components/IndicatorWeather';
 function App() {
   return (
