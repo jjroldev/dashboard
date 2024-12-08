@@ -9,7 +9,7 @@ function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <Grid>
+    <Grid container spacing={5}>
 
         {/* Indicadores */}
         <Grid>Elemento: Indicador 1</Grid>
