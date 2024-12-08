@@ -1,7 +1,15 @@
-export default function IndicatorWeather() {
+interface Indicator {
+    title?: String;
+    subtitle?: String;
+    value?: String;
+}
+
+export default function IndicatorWeather(config: Indicator) {
     return (
         <>
-            Componente IndicatorWeather
-        </> 
+            {config.title}<br/>
+            {config.value}<br/>
+            {config.subtitle}
+        </>
     )
 }
