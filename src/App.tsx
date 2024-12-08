@@ -1,13 +1,8 @@
-import { useState } from 'react'
 // Grid version 2
 import Grid from '@mui/material/Grid2' 
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <Grid container spacing={5}>
 
