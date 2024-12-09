@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 interface MyProp {
   itemsIn: Item[];
 }
-
+{/*
 function createData(
   name: string,
   calories: number,
@@ -29,6 +29,7 @@ const rows = [
   createData('Cupcake', 305, 3.7, 67, 4.3),
   createData('Gingerbread', 356, 16.0, 49, 3.9),
 ];
+*/}
 
 export default function BasicTable(props: MyProp) {
   const [rows, setRows] = useState<Item[]>([])
