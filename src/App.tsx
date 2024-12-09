@@ -5,6 +5,7 @@ import IndicatorWeather from './components/IndicatorWeather';
 import TableWeather from './components/TableWeather';
 import ControlWeather from './components/ControlWeather';
 import LineChartWeather from './components/LineChartWeather';
+import Item from './interface/Item'
 {/* Hooks */ }
 import { useEffect, useState } from 'react';
 
@@ -15,6 +16,8 @@ interface Indicator {
 }
 
 function App() {
+  let [items, setItems] = useState<Item[]>([])
+
   {/* Variable de estado y función de actualización */ }
   let [indicators, setIndicators] = useState<Indicator[]>([])
   let [owm, setOWM] = useState(localStorage.getItem("openWeatherMap"))
@@ -57,6 +60,7 @@ function App() {
 
       {/* Valide el procesamiento con el valor de savedTextXML */ }
       if (savedTextXML) {
+
         {/* XML Parser */ }
         const parser = new DOMParser();
         const xml = parser.parseFromString(savedTextXML, "application/xml");
@@ -88,6 +92,30 @@ function App() {
 
         {/* Modificación de la variable de estado mediante la función de actualización */ }
         setIndicators(dataToIndicators)
+
+        const dataToItems: Item[] = [];
+
+        const times = xml.getElementsByTagName("time");
+
+        for (let i = 0; i < Math.min(times.length, 6); i++) {
+          const time = times[i];
+          const dateStart = time.getAttribute("from") || "";
+          const dateEnd = time.getAttribute("to") || "";
+
+          const precipitation = time.getElementsByTagName("precipitation")[0]?.getAttribute("probability") || "0";
+          const humidity = time.getElementsByTagName("humidity")[0]?.getAttribute("value") || "0";
+          const clouds = time.getElementsByTagName("clouds")[0]?.getAttribute("all") || "0";
+
+          dataToItems.push({
+            dateStart,
+            dateEnd,
+            precipitation,
+            humidity,
+            clouds,
+          });
+        }
+
+        setItems(dataToItems);
       }
     }
 
@@ -137,7 +165,7 @@ function App() {
             <ControlWeather />
           </Grid>
           <Grid size={{ xs: 12, xl: 9 }}>
-            <TableWeather />
+            <TableWeather itemsIn={items} />
           </Grid>
         </Grid>
       </Grid>
