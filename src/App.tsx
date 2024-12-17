@@ -23,12 +23,12 @@ function App() {
     icono: string;
     temperatura: string;
   } | null>(null);
+
   let [dataClima, setDataClima] = useState<string>('');
   let [items, setItems] = useState<Item[]>([])
 
   const [ciudad, setCiudad] = useState('Guayaquil');
   let [indicators, setIndicators] = useState<Indicator[]>([])
-
   let [owm, setOWM] = useState(localStorage.getItem("openWeatherMap"))
   let API_KEY = "8db1c4c45b52bde6dc037c92fba3cd7b"
 
@@ -56,7 +56,7 @@ function App() {
     const tempKelvin = temperature?.getAttribute('value') || '0';
     const tempCelsius = (parseFloat(tempKelvin) - 273.15).toFixed(2); // Convertir a Celsius
 
-    
+
     setDetalleClima({
       descripcion,
       icono,
@@ -83,6 +83,30 @@ function App() {
 
     // Actualizamos el estado con los indicadores
     setIndicators(dataToIndicators);
+
+    const dataToItems: Item[] = [];
+
+    const times = xml.getElementsByTagName("time");
+
+    for (let i = 0; i < Math.min(times.length, 6); i++) {
+      const time = times[i];
+      const dateStart = time.getAttribute("from") || "";
+      const dateEnd = time.getAttribute("to") || "";
+
+      const precipitation = time.getElementsByTagName("precipitation")[0]?.getAttribute("probability") || "0";
+      const humidity = time.getElementsByTagName("humidity")[0]?.getAttribute("value") || "0";
+      const clouds = time.getElementsByTagName("clouds")[0]?.getAttribute("all") || "0";
+
+      dataToItems.push({
+        dateStart,
+        dateEnd,
+        precipitation,
+        humidity,
+        clouds,
+      });
+    }
+
+    setItems(dataToItems);
 
   }, [dataClima, ciudad]);
 
@@ -142,29 +166,7 @@ function App() {
   //       {/* Modificación de la variable de estado mediante la función de actualización */ }
   //       setIndicators(dataToIndicators)
 
-  //       const dataToItems: Item[] = [];
 
-  //       const times = xml.getElementsByTagName("time");
-
-  //       for (let i = 0; i < Math.min(times.length, 6); i++) {
-  //         const time = times[i];
-  //         const dateStart = time.getAttribute("from") || "";
-  //         const dateEnd = time.getAttribute("to") || "";
-
-  //         const precipitation = time.getElementsByTagName("precipitation")[0]?.getAttribute("probability") || "0";
-  //         const humidity = time.getElementsByTagName("humidity")[0]?.getAttribute("value") || "0";
-  //         const clouds = time.getElementsByTagName("clouds")[0]?.getAttribute("all") || "0";
-
-  //         dataToItems.push({
-  //           dateStart,
-  //           dateEnd,
-  //           precipitation,
-  //           humidity,
-  //           clouds,
-  //         });
-  //       }
-
-  //       setItems(dataToItems);
   //     }
   //   }
 
@@ -188,25 +190,33 @@ function App() {
   return (
     <>
       <SearchAppBar setCiudad={setCiudad} />
-      {ciudad && detalleClima && (
-        <div className="contenedorDetalles">
-          <h2>{ciudad}</h2>
-          <p>Descripción: {detalleClima.descripcion}</p>
-          <p>Temperatura: {detalleClima.temperatura}</p>
-          <img
-            src={`https://openweathermap.org/img/wn/${detalleClima.icono}@2x.png`}
-            alt={detalleClima.descripcion}
-          />
-        </div>
-      )}
-      <h2>Indicadores</h2>
-      <Grid container spacing={8} sx={{maxWidth: "80%",
-        margin: "0 auto",gap:"12px",placeContent:"center",padding:"20px"
-      }}>
-        {renderIndicators()}
-      </Grid>
+      <div className="contenedorPrincipal">
+        {ciudad && detalleClima && (
+          <div className="contenedorDetalles">
+            <h2>{ciudad}</h2>
+            <p>Descripción: {detalleClima.descripcion}</p>
+            <p>Temperatura: {detalleClima.temperatura}</p>
+            <img
+              src={`https://openweathermap.org/img/wn/${detalleClima.icono}@2x.png`}
+              alt={detalleClima.descripcion}
+            />
+          </div>
+        )}
+        <section>
+          <h2>Indicadores</h2>
+          <Grid container spacing={0} sx={{
+            gap: "12px", placeContent: "center"
+          }}>
+            {renderIndicators()}
+          </Grid>
+        </section>
+        <section className='tabla'>
+          <h2>Tabla</h2>
+          <TableWeather itemsIn={items} />
+        </section>
+      </div>
     </>
-  )
+  );
 }
 
 export default App
