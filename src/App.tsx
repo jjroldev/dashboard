@@ -32,22 +32,44 @@ function App() {
   const [indicators, setIndicators] = useState<Indicator[]>([]);
   const API_KEY = '8db1c4c45b52bde6dc037c92fba3cd7b';
 
-  const fetchDataWeather = async (ciudad: string) => {
-    try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${ciudad}&mode=xml&appid=${API_KEY}`
-      );
-      if (!response.ok) throw new Error('Error en la solicitud');
-
-      const savedTextXML = await response.text();
-      setDataClima(savedTextXML);
-    } catch (error) {
-      console.error('Error al obtener el clima:', error);
-      setDataClima('');
-    }
-  };
-
   useEffect(() => {
+    const fetchDataWeather = async (ciudad: string) => {
+      try {
+        const savedData = localStorage.getItem("openWeatherMap");
+        const expiringTime = localStorage.getItem("expiringTime");
+  
+        const nowTime = new Date().getTime();
+  
+        if (expiringTime && nowTime < parseInt(expiringTime) && savedData) {
+          setDataClima(savedData);
+          console.log("Usando datos del Local Storage");
+          return;
+        }
+  
+        console.log("Solicitando datos de la API...");
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/forecast?q=${ciudad}&mode=xml&appid=${API_KEY}`
+        );
+  
+        if (!response.ok) throw new Error("Error en la solicitud");
+  
+        const savedTextXML = await response.text();
+  
+        // Almacenar en el Local Storage con tiempo de expiración
+        const hours = 1; // Tiempo de expiración en horas
+        const delay = hours * 3600000; // Convertir horas a milisegundos
+        const newExpiringTime = nowTime + delay;
+  
+        localStorage.setItem("openWeatherMap", savedTextXML);
+        localStorage.setItem("expiringTime", newExpiringTime.toString());
+  
+        setDataClima(savedTextXML);
+      } catch (error) {
+        console.error("Error al obtener el clima:", error);
+        setDataClima("");
+      }
+    };
+  
     fetchDataWeather(ciudad);
   }, [ciudad]);
 
@@ -131,7 +153,7 @@ function App() {
       <SearchAppBar setCiudad={setCiudad} />
       <div className="contenedorPrincipal">
         {ciudad && detalleClima && (
-          <div className="contenedorDetalles">
+          <div className="contenedorDetalles" style={{marginTop:"70px"}}>
             <h2>{ciudad}</h2>
             <p>Descripción: {detalleClima.descripcion}</p>
             <p>Temperatura: {detalleClima.temperatura}</p>
