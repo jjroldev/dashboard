@@ -1,37 +1,93 @@
+import { useState, useEffect } from 'react';
 import Paper from '@mui/material/Paper';
 import { LineChart } from '@mui/x-charts/LineChart';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
 
-const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-const pData = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
-const xLabels = [
-    'Page A',
-    'Page B',
-    'Page C',
-    'Page D',
-    'Page E',
-    'Page F',
-    'Page G',
-];
+interface DataPoint {
+    time: string;
+    temperature: number;
+    humidity: number;
+    windSpeed: number;
+}
 
-export default function LineChartWeather() {
+export default function LineChartWeather({ weatherDataXML }: { weatherDataXML: string }) {
+    const [selectedVariable, setSelectedVariable] = useState('temperature');
+    const [chartData, setChartData] = useState<number[]>([]);
+    const [xLabels, setXLabels] = useState<string[]>([]);
+
+    useEffect(() => {
+
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(weatherDataXML, "application/xml");
+
+        const times = xml.getElementsByTagName("time");
+        let extractedData: DataPoint[] = [];
+
+        for (let i = 0; i < 8; i++) {
+            const time = times[i];
+            if (!time) continue;
+
+            const timeLabel = time.getAttribute("from") || '';
+            const tempKelvin = time.querySelector('temperature')?.getAttribute('value');
+            const humidity = time.querySelector('humidity')?.getAttribute('value');
+            const windSpeed = time.querySelector('windSpeed')?.getAttribute('mps');
+
+            if (!tempKelvin || !humidity || !windSpeed) {
+                console.warn('Missing data for time node:', time);
+                continue;
+            }
+
+            extractedData.push({
+                time: timeLabel,
+                temperature: parseFloat((parseFloat(tempKelvin) - 273.15).toFixed(2)),
+                humidity: parseFloat(humidity),
+                windSpeed: parseFloat(windSpeed),
+            });
+        }
+
+        setXLabels(extractedData.map(item => item.time.split("T")[1]?.slice(0, 5) || ''));
+        updateChartData(extractedData, selectedVariable);
+    }, [weatherDataXML, selectedVariable]);
+
+    const updateChartData = (data: DataPoint[], variable: string) => {
+        const mappedData = data.map(item => item[variable as keyof DataPoint] as number);
+        setChartData(mappedData);
+    };
+
+    const handleChange = (event: any) => {
+        setSelectedVariable(event.target.value);
+    };
+
     return (
-        <Paper
-            sx={{
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column'
-            }}
-        >
+        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
+            <FormControl fullWidth>
+                <InputLabel id="variable-select-label">Variable</InputLabel>
+                <Select
+                    labelId="variable-select-label"
+                    value={selectedVariable}
+                    label="Variable"
+                    onChange={handleChange}
+                >
+                    <MenuItem value="temperature">Temperatura (°C)</MenuItem>
+                    <MenuItem value="humidity">Humedad (%)</MenuItem>
+                    <MenuItem value="windSpeed">Velocidad del Viento (m/s)</MenuItem>
+                </Select>
+            </FormControl>
 
-            {/* Componente para un gráfico de líneas */}
             <LineChart
-                width={400}
-                height={250}
-                series={[
-                    { data: pData, label: 'pv' },
-                    { data: uData, label: 'uv' },
-                ]}
-                xAxis={[{ scaleType: 'point', data: xLabels }]}
+                width={500}
+                height={300}
+                series={[{
+                    data: chartData,
+                    label: selectedVariable
+                }]}
+                xAxis={[{
+                    scaleType: 'point',
+                    data: xLabels
+                }]}
             />
         </Paper>
     );
