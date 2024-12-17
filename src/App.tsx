@@ -3,13 +3,13 @@ import Grid from '@mui/material/Grid2'
 import './App.css'
 import IndicatorWeather from './components/IndicatorWeather';
 import TableWeather from './components/TableWeather';
-import ControlWeather from './components/ControlWeather';
-import LineChartWeather from './components/LineChartWeather';
+// import ControlWeather from './components/ControlWeather';
+// import LineChartWeather from './components/LineChartWeather';
 import SearchAppBar from './components/SearchAppBar';
 import Item from './interface/Item'
 {/* Hooks */ }
 import { useEffect, useState } from 'react';
-import ControlCity from './components/ControlCity';
+// import ControlCity from './components/ControlCity';
 
 interface Indicator {
   title?: String;
@@ -29,7 +29,7 @@ function App() {
 
   const [ciudad, setCiudad] = useState('Guayaquil');
   let [indicators, setIndicators] = useState<Indicator[]>([])
-  let [owm, setOWM] = useState(localStorage.getItem("openWeatherMap"))
+  // let [owm, setOWM] = useState(localStorage.getItem("openWeatherMap"))
   let API_KEY = "8db1c4c45b52bde6dc037c92fba3cd7b"
 
   const fetchDataWeather = async (ciudad: String) => {
