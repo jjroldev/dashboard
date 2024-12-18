@@ -35,43 +35,50 @@ function App() {
   useEffect(() => {
     const fetchDataWeather = async (ciudad: string) => {
       try {
-        const savedData = localStorage.getItem("openWeatherMap");
-        const expiringTime = localStorage.getItem("expiringTime");
+        const cityKey = `openWeatherMap_${ciudad}`;
+        const savedData = localStorage.getItem(cityKey);
+        const expiringTime = localStorage.getItem(`expiringTime_${ciudad}`);
   
         const nowTime = new Date().getTime();
   
         if (expiringTime && nowTime < parseInt(expiringTime) && savedData) {
           setDataClima(savedData);
-          console.log("Usando datos del Local Storage");
+          console.log(`Usando datos almacenados en Local Storage para ${ciudad}`);
           return;
         }
   
-        console.log("Solicitando datos de la API...");
+        console.log(`Solicitando datos de la API para ${ciudad}...`);
         const response = await fetch(
           `https://api.openweathermap.org/data/2.5/forecast?q=${ciudad}&mode=xml&appid=${API_KEY}`
         );
   
-        if (!response.ok) throw new Error("Error en la solicitud");
+        if (response.status === 404) {
+          throw new Error("Ciudad no encontrada");
+        }
+  
+        if (!response.ok) throw new Error("Error en la solicitud a la API");
   
         const savedTextXML = await response.text();
   
-        // Almacenar en el Local Storage con tiempo de expiración
-        const hours = 1; // Tiempo de expiración en horas
-        const delay = hours * 3600000; // Convertir horas a milisegundos
+        const hours = 1;
+        const delay = hours * 3600000;
         const newExpiringTime = nowTime + delay;
   
-        localStorage.setItem("openWeatherMap", savedTextXML);
-        localStorage.setItem("expiringTime", newExpiringTime.toString());
+        localStorage.setItem(cityKey, savedTextXML);
+        localStorage.setItem(`expiringTime_${ciudad}`, newExpiringTime.toString());
   
         setDataClima(savedTextXML);
       } catch (error) {
         console.error("Error al obtener el clima:", error);
+        window.alert("La ciudad no fue encontrada. Se mantendrá Guayaquil como predeterminada.");
+        setCiudad("Guayaquil");
         setDataClima("");
       }
     };
   
     fetchDataWeather(ciudad);
   }, [ciudad]);
+  
 
   useEffect(() => {
     if (!dataClima) return;
@@ -153,7 +160,7 @@ function App() {
       <SearchAppBar setCiudad={setCiudad} />
       <div className="contenedorPrincipal">
         {ciudad && detalleClima && (
-          <div className="contenedorDetalles" style={{marginTop:"70px"}}>
+          <div className="contenedorDetalles" style={{ marginTop: "70px" }}>
             <h2>{ciudad}</h2>
             <p>Descripción: {detalleClima.descripcion}</p>
             <p>Temperatura: {detalleClima.temperatura}</p>
