@@ -71,8 +71,8 @@ export default function LineChartWeather({ weatherDataXML }: { weatherDataXML: s
             {/* Gráfico de línea */}
             {selectedVariableIndex >= 0 && (
                 <LineChart
-                    width={500}
-                    height={300}
+                    width={600}
+                    height={400}
                     series={[
                         {
                             data: chartData,
