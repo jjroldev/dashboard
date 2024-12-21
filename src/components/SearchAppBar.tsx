@@ -101,9 +101,30 @@ export default function SearchAppBar({ setCiudad }: SearchAppBarProps) {
               'aria-labelledby': 'menu-button',
             }}
           >
-            <MenuItem onClick={handleMenuClose}>Indicadores</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Gráfico</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Tabla Capitales</MenuItem>
+            <MenuItem
+              onClick={() => {
+                document.getElementById('indicadores')?.scrollIntoView({ behavior: 'smooth' });
+                handleMenuClose();
+              }}
+            >
+              Indicadores
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                document.getElementById('grafico')?.scrollIntoView({ behavior: 'smooth' });
+                handleMenuClose();
+              }}
+            >
+              Gráfico
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                document.getElementById('tabla')?.scrollIntoView({ behavior: 'smooth' });
+                handleMenuClose();
+              }}
+            >
+              Tabla
+            </MenuItem>
           </Menu>
           <Typography
             variant="h6"
@@ -111,6 +132,7 @@ export default function SearchAppBar({ setCiudad }: SearchAppBarProps) {
             component="div"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
           >
+
           </Typography>
           <Search onSubmit={handleSearchSubmit}>
             <SearchIconWrapper>

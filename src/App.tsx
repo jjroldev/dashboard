@@ -170,17 +170,17 @@ function App() {
             />
           </div>
         )}
-        <section>
+        <section id='indicadores'>
           <h2>Indicadores</h2>
           <Grid container spacing={0} sx={{ gap: '12px', placeContent: 'center' }}>
             {renderIndicators()}
           </Grid>
         </section>
-        <section className="tabla">
+        <section id="tabla" className="tabla">
           <h2>Tabla</h2>
           <TableWeather itemsIn={items} />
         </section>
-        <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <section id="grafico" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <h2>Gráfico</h2>
           <FormControl sx={{ m: 1, minWidth: 120 }}>
             <InputLabel id="select-variable-label">Variable</InputLabel>
