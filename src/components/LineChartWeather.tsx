@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import Paper from '@mui/material/Paper';
 import { LineChart } from '@mui/x-charts/LineChart';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
+import ControlWeather from './ControlWeather';
 
 interface DataPoint {
     time: string;
@@ -14,12 +11,19 @@ interface DataPoint {
 }
 
 export default function LineChartWeather({ weatherDataXML }: { weatherDataXML: string }) {
-    const [selectedVariable, setSelectedVariable] = useState('temperature');
+    const [selectedVariableIndex, setSelectedVariableIndex] = useState(0);
     const [chartData, setChartData] = useState<number[]>([]);
     const [xLabels, setXLabels] = useState<string[]>([]);
 
-    useEffect(() => {
+    const items = [
+        { name: "Temperatura", description: "Medida de cuán caliente o frío está el ambiente en grados Celsius (°C)." },
+        { name: "Humedad", description: "Porcentaje de vapor de agua presente en el aire." },
+        { name: "Velocidad del Viento", description: "Rapidez con la que el viento se desplaza en metros por segundo (m/s)." },
+    ];
 
+    const variablesMap = ["temperature", "humidity", "windSpeed"];
+
+    useEffect(() => {
         const parser = new DOMParser();
         const xml = parser.parseFromString(weatherDataXML, "application/xml");
 
@@ -35,10 +39,7 @@ export default function LineChartWeather({ weatherDataXML }: { weatherDataXML: s
             const humidity = time.querySelector('humidity')?.getAttribute('value');
             const windSpeed = time.querySelector('windSpeed')?.getAttribute('mps');
 
-            if (!tempKelvin || !humidity || !windSpeed) {
-                console.warn('Missing data for time node:', time);
-                continue;
-            }
+            if (!tempKelvin || !humidity || !windSpeed) continue;
 
             extractedData.push({
                 time: timeLabel,
@@ -49,46 +50,43 @@ export default function LineChartWeather({ weatherDataXML }: { weatherDataXML: s
         }
 
         setXLabels(extractedData.map(item => item.time.split("T")[1]?.slice(0, 5) || ''));
-        updateChartData(extractedData, selectedVariable);
-    }, [weatherDataXML, selectedVariable]);
+        if (selectedVariableIndex >= 0) {
+            updateChartData(extractedData, selectedVariableIndex);
+        }
+    }, [weatherDataXML, selectedVariableIndex]);
 
-    const updateChartData = (data: DataPoint[], variable: string) => {
+    const updateChartData = (data: DataPoint[], variableIndex: number) => {
+        const variable = variablesMap[variableIndex];
         const mappedData = data.map(item => item[variable as keyof DataPoint] as number);
         setChartData(mappedData);
     };
 
-    const handleChange = (event: any) => {
-        setSelectedVariable(event.target.value);
-    };
-
     return (
-        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <FormControl fullWidth>
-                <InputLabel id="variable-select-label">Variable</InputLabel>
-                <Select
-                    labelId="variable-select-label"
-                    value={selectedVariable}
-                    label="Variable"
-                    onChange={handleChange}
-                >
-                    <MenuItem value="temperature">Temperatura (°C)</MenuItem>
-                    <MenuItem value="humidity">Humedad (%)</MenuItem>
-                    <MenuItem value="windSpeed">Velocidad del Viento (m/s)</MenuItem>
-                </Select>
-            </FormControl>
-
-            <LineChart
-                width={500}
-                height={300}
-                series={[{
-                    data: chartData,
-                    label: selectedVariable
-                }]}
-                xAxis={[{
-                    scaleType: 'point',
-                    data: xLabels
-                }]}
+        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <ControlWeather
+                items={items}
+                onVariableChange={(index) => setSelectedVariableIndex(index)}
             />
+
+            {/* Gráfico de línea */}
+            {selectedVariableIndex >= 0 && (
+                <LineChart
+                    width={500}
+                    height={300}
+                    series={[
+                        {
+                            data: chartData,
+                            label: items[selectedVariableIndex].name,
+                        },
+                    ]}
+                    xAxis={[
+                        {
+                            scaleType: 'point',
+                            data: xLabels,
+                        },
+                    ]}
+                />
+            )}
         </Paper>
     );
 }
